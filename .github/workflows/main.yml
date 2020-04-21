@@ -15,12 +15,18 @@ env:
   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
   DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
   DOCKER_REPO: ${{secrets.DOCKER_REPO}}
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: free disk space
+      run: |
+        sudo swapoff -a
+        sudo rm -f /swapfile
+        sudo apt clean
+        docker rmi $(docker image ls -aq)
+        df -h
     - name: List environment info
       run: |
         make show-env
@@ -62,9 +68,13 @@ jobs:
         METADATA_API_APIM_KEY: ${{ secrets.METADATA_API_APIM_KEY }}
 
     - name: Build docker images for scheduler and executor
-      if: github.ref == 'refs/heads/master'
       run: |
         make build
+
+    - name: Scan image
+      run: |
+        make scan
+
     - name: Push docker images for scheduler and executor
       if: github.ref == 'refs/heads/master'
       run: |
