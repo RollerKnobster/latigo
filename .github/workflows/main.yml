@@ -68,10 +68,12 @@ jobs:
         METADATA_API_APIM_KEY: ${{ secrets.METADATA_API_APIM_KEY }}
 
     - name: Build docker images for scheduler and executor
+      if: github.ref == 'refs/heads/master'
       run: |
         make build
 
     - name: Scan image
+      if: github.ref == 'refs/heads/master'
       run: |
         make scan
 
